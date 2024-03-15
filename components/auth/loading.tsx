@@ -6,8 +6,8 @@ export const Loading = () => {
             <Image
                 src="/tanoa.svg"
                 alt="Tanoa logo"
-                width={120}
-                height={120}
+                width={100}
+                height={100}
                 className="animate-pulse duration-700 transition-all ease-in-out"
             />
             <p className="text-2xl font-bold mt-4">Loading...</p>
