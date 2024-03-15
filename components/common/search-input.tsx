@@ -2,17 +2,17 @@
 import qs from "query-string";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useDebounceCallback } from "usehooks-ts";
 import { useState, ChangeEvent, useEffect } from "react";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/lib/hooks/use-debounce";
 
 export const SearchInput = () => {
   const { push } = useRouter();
   const [search, setSearch] = useState("");
-  const debouncedValue = useDebounceCallback(setSearch, 500);
+  const debouncedValue = useDebounce(search, 500);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    debouncedValue(e.target.value);
+    setSearch(e.target.value);
   };
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const SearchInput = () => {
       {
         url: "/",
         query: {
-          search: search,
+          search: debouncedValue,
         },
       },
       { skipEmptyString: true, skipNull: true }
