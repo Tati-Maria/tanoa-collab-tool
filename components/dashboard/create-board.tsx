@@ -1,28 +1,32 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useOrganization } from "@clerk/nextjs";
+import { useApiMutation } from "@/lib/hooks/use-api-mutation";
 
 export const CreateBoard: React.FC = () => {
   const { organization } = useOrganization();
-  const create = useMutation(api.board.create);
+  const {mutate, loading, error} = useApiMutation(api.board.create);
 
   const onClick = () => {
     if (!organization) {
       return;
     } // bail if no organization
 
-    create({
+    mutate({
       orgId: organization.id,
       title: "Untitled Board",
     });
   };
 
   return (
-    <Button onClick={onClick} type="button">
-      Create Board
+    <Button 
+    disabled={loading}
+    variant={error ? "destructive" : "default"}
+    onClick={onClick} type="button"
+    >
+      {loading ? "Creating..." : error ? "Error!" : "Create Board"}
     </Button>
   );
 };
