@@ -29,13 +29,62 @@ export const create = mutation({
     const imageUrl = images[Math.floor(Math.random() * images.length)];
 
     const board = await ctx.db.insert("boards", {
-        title: args.title,
-        orgId: args.orgId,
-        authorId: identity.subject,
-        authorName: identity.name!,
-        imageUrl,
+      title: args.title,
+      orgId: args.orgId,
+      authorId: identity.subject,
+      authorName: identity.name!,
+      imageUrl,
     });
 
     return board;
   },
+});
+
+// Remove
+export const remove = mutation({
+  args: {
+    id: v.id("boards"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    //TODO: LATER CHECK TO DELETE FAVORITE RELATION AS WELL
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+// Edit
+export const update = mutation({
+  args: {
+    id: v.id("boards"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const title = args.title.trim();
+
+    if (!title) {
+      throw new Error("Title cannot be empty");
+    }
+
+    if(title.length > 60) {
+      throw new Error("Title cannot be longer than 60 characters");
+    }
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const board = await ctx.db.patch(args.id, {
+      title: args.title,
+    })
+
+    return board;
+  },
+
 });
