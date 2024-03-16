@@ -27,7 +27,9 @@ const font = Poppins({
 });
 
 const TabSeparator = () => {
-  return <div className="text-neutral-300 px-1.5" />;
+  return <div className="text-neutral-400 px-1.5">
+    |
+  </div>;
 };
 
 //main components
@@ -63,6 +65,7 @@ export const Info = ({ boardId }: InfoProps) => {
           type="button"
           className="text-base font-normal px-2 truncate"
           onClick={() => onOpen(data._id, data.title)}
+          variant={"board"}
         >
           {data.title}
         </Button>
