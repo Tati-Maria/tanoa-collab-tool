@@ -19,6 +19,13 @@ export const BoardFooter: React.FC<BoardFooterProps> = ({
   onClick,
   disabled,
 }) => {
+
+  const handleFavorite = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onClick();
+  }
+
   return (
     <div className="bg-white relative p-3">
       <Typography
@@ -37,11 +44,11 @@ export const BoardFooter: React.FC<BoardFooterProps> = ({
           disabled && "cursor-not-allowed opacity-75"
         )}
         disabled={disabled}
-        onClick={onClick}
+        onClick={handleFavorite}
         type="button"
       >
         <Star 
-        className={cn("h-4 w-4", isFavorite && "fill-blue-600 text-blue-600")}
+        className={cn("h-5 w-5", isFavorite && "fill-blue-600 text-blue-600")}
         />
       </button>
     </div>
