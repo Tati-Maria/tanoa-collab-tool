@@ -8,6 +8,7 @@ export type Color = {
 export type Camera = {
     x: number;
     y: number;
+    zoom?: number;
 }
 
 export enum LayerType {
