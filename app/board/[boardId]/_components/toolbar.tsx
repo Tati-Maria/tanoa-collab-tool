@@ -17,10 +17,8 @@ interface ToolbarProps {
   setCanvasState: (newState: CanvasState) => void;
   undo: () => void;
   redo: () => void;
-  clearAll: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  canClearAll: boolean;
 }
 
 export const Toolbar = ({
@@ -28,10 +26,8 @@ export const Toolbar = ({
   setCanvasState,
   undo,
   redo,
-  clearAll,
   canUndo,
   canRedo,
-  canClearAll,
 }: ToolbarProps) => {
   return (
     <div className="absolute top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4">
@@ -91,12 +87,6 @@ export const Toolbar = ({
           icon={Redo2}
           onClick={redo}
           isDisabled={!canRedo}
-        />
-        <ToolButton
-          label="Clear (this action cannot be undone)"
-          icon={Paintbrush}
-          onClick={clearAll}
-          isDisabled={!canClearAll}
         />
       </div>
     </div>
