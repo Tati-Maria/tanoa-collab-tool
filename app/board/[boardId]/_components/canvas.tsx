@@ -27,6 +27,7 @@ import { nanoid } from "nanoid";
 import { LiveObject } from "@liveblocks/client";
 import { LayerPreview } from "./layer-preview";
 import { SelectionBox } from "./selection-box";
+import { SelectionTools } from "./selection-tools";
 
 const MAX_LAYERS = 100;
 
@@ -82,28 +83,27 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
     [lastUsedColor]
   );
 
-   const resizeSelectedLayer = useMutation(
-     ({ storage, self }, point: Point) => {
-       if (canvasState.mode !== CanvasMode.Resizing) {
-         return;
-       }
+  const resizeSelectedLayer = useMutation(
+    ({ storage, self }, point: Point) => {
+      if (canvasState.mode !== CanvasMode.Resizing) {
+        return;
+      }
 
-       const bounds = resizeBounds(
-         canvasState.initialBounds,
-         canvasState.corner,
-         point
-       );
+      const bounds = resizeBounds(
+        canvasState.initialBounds,
+        canvasState.corner,
+        point
+      );
 
-       const liveLayers = storage.get("layers");
-       const layer = liveLayers.get(self.presence.selection[0]);
+      const liveLayers = storage.get("layers");
+      const layer = liveLayers.get(self.presence.selection[0]);
 
-       if (layer) {
-         layer.update(bounds);
-       }
-     },
-     [canvasState]
-   );
-
+      if (layer) {
+        layer.update(bounds);
+      }
+    },
+    [canvasState]
+  );
 
   // If the user scrolls, move the camera
   const onWheel = useCallback((e: React.WheelEvent) => {
@@ -113,30 +113,40 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
     }));
   }, []);
 
+  //UNSELECT ALL LAYERS
+  const unselectLayers = useMutation(({ self, setMyPresence }) => {
+    if (self.presence.selection.length > 0) {
+      setMyPresence({ selection: [] }, { addToHistory: true });
+    }
+  }, []);
+
   //translate selected layer
-  const translateSelectedLayer = useMutation(({storage, self}, point: Point) => {
-    if(canvasState.mode !== CanvasMode.Translating){
-      return;
-    }
-
-    const offset = {
-      x: point.x - canvasState.current.x,
-      y: point.y - canvasState.current.y
-    }
-
-    const liveLayers = storage.get("layers");
-    for(const id of self.presence.selection){
-      const layer = liveLayers.get(id);
-      if(layer){
-        layer.update({
-          x: layer.get("x") + offset.x,
-          y: layer.get("y") + offset.y
-        });
+  const translateSelectedLayer = useMutation(
+    ({ storage, self }, point: Point) => {
+      if (canvasState.mode !== CanvasMode.Translating) {
+        return;
       }
-    }
 
-    setCanvasState({mode: CanvasMode.Translating, current: point});
-  }, [canvasState])
+      const offset = {
+        x: point.x - canvasState.current.x,
+        y: point.y - canvasState.current.y,
+      };
+
+      const liveLayers = storage.get("layers");
+      for (const id of self.presence.selection) {
+        const layer = liveLayers.get(id);
+        if (layer) {
+          layer.update({
+            x: layer.get("x") + offset.x,
+            y: layer.get("y") + offset.y,
+          });
+        }
+      }
+
+      setCanvasState({ mode: CanvasMode.Translating, current: point });
+    },
+    [canvasState]
+  );
 
   // Update the user's cursor position
   const onPointerMove = useMutation(
@@ -161,11 +171,33 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
     setMyPresence({ cursor: null });
   }, []);
 
+  // When the user releases the mouse, stop inserting or moving layers
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      const point = pointerEventToCanvasPoint(e, camera);
+
+      if (canvasState.mode === CanvasMode.Inserting) {
+        return;
+      }
+
+      //TODO: aDD CASE FOR DRAWING
+      setCanvasState({ origin: point, mode: CanvasMode.Pressing });
+    },
+    [camera, canvasState.mode, setCanvasState]
+  );
+
   //
   const onPointerUp = useMutation(
     ({}, e) => {
       const point = pointerEventToCanvasPoint(e, camera);
-      if (canvasState.mode === CanvasMode.Inserting) {
+
+      if (
+        canvasState.mode === CanvasMode.None ||
+        canvasState.mode === CanvasMode.Pressing
+      ) {
+        unselectLayers();
+        setCanvasState({ mode: CanvasMode.None });
+      } else if (canvasState.mode === CanvasMode.Inserting) {
         insertLayer(canvasState.layerType, point);
       } else {
         setCanvasState({ mode: CanvasMode.None });
@@ -173,7 +205,7 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
 
       history.resume();
     },
-    [camera, canvasState, insertLayer, history]
+    [camera, canvasState, insertLayer, history, unselectLayers]
   );
 
   //selection color
@@ -217,13 +249,13 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
       history.pause();
       e.stopPropagation();
       const current = pointerEventToCanvasPoint(e, camera);
-      if(!self.presence.selection.includes(layedId)){
+      if (!self.presence.selection.includes(layedId)) {
         setMyPresence({ selection: [layedId] }, { addToHistory: true });
       }
 
       setCanvasState({
         mode: CanvasMode.Translating,
-        current
+        current,
       });
     },
 
@@ -242,12 +274,17 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
         canUndo={canUndo}
         canRedo={canRedo}
       />
+      <SelectionTools 
+      camera={camera}
+      setLastUsedColor={setLastUsedColor}
+      />
       <svg
         onWheel={onWheel}
         onPointerMove={onPointerMove}
         className="h-[100vh] w-[100vw]"
         onPointerLeave={onPointerLeave}
         onPointerUp={onPointerUp}
+        onPointerDown={onPointerDown}
       >
         <g
           style={{
@@ -262,9 +299,7 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
               onLayerPointDown={onLayerPointerDown}
             />
           ))}
-          <SelectionBox 
-          onResizeHandlePointerDown={onResizeHandlePointerDown}
-          />
+          <SelectionBox onResizeHandlePointerDown={onResizeHandlePointerDown} />
           <CursorsPresence />
         </g>
       </svg>
