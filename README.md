@@ -30,7 +30,7 @@ By building this project I learnt more about Convex and how to work with realtim
 
 ## Demo
 
-Insert gif or link to demo
+https://tanoa-collab-tool.vercel.app/
 
 ## Acknowledgements
 
