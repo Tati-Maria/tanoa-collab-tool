@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
   DropdownMenuItem,
 } from "../ui/dropdown-menu";
 import { ConfirmModal } from "./confirm-modal";
@@ -15,6 +14,7 @@ import { useApiMutation } from "@/lib/hooks/use-api-mutation";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { useRenameModal } from "@/store/use-rename-modal";
+import { useRouter } from "next/navigation";
 
 interface ActionProps {
   children: React.ReactNode;
@@ -32,6 +32,7 @@ export const Actions = ({
   title,
 }: ActionProps) => {
   const { mutate, loading } = useApiMutation(api.board.remove);
+  const router = useRouter();
 
   const { onOpen } = useRenameModal();
 
@@ -50,6 +51,7 @@ export const Actions = ({
     mutate({ id })
       .then(() => {
         toast.success("Board deleted");
+        router.push("/");
       })
       .catch(() => {
         toast.error("Failed to delete board");

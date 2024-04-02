@@ -18,9 +18,9 @@ export const ColorPicker = ({onChange}: Props) => {
             <ColorButton onClick={onChange} color={{r: 255, g: 0, b: 0}} />
             <ColorButton onClick={onChange} color={{r: 0, g: 255, b: 0}} />
             <ColorButton onClick={onChange} color={{r: 0, g: 0, b: 255}} />
-            <ColorButton onClick={onChange} color={{r: 255, g: 255, b: 0}} />
+            <ColorButton onClick={onChange} color={{r: 244, g: 236, b: 214}} />
             <ColorButton onClick={onChange} color={{r: 255, g: 0, b: 255}} />
-            <ColorButton onClick={onChange} color={{r: 0, g: 255, b: 255}} />
+            <ColorButton onClick={onChange} color={{r: 234, g: 55, b: 136}} />
         </div>
     )
 }
