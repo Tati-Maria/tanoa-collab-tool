@@ -152,6 +152,7 @@ export function penPointsToPathLayer(
   };
 };
 
+// FUNCTION FROM GPT-3
 export function getSvgPathFromStroke(stroke: number[][]) {
   if (!stroke.length) return "";
 
