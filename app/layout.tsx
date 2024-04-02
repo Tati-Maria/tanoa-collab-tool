@@ -4,12 +4,13 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/providers/convex-client-provider";
 import { ModalProvider } from "@/providers/modal-provider";
+import { Suspense } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Tanoa",
-  description: "Tanoa is a collaborative platform like Miro, but better.",
+  description: "Tanoa is a collaborative whiteboard tool for teams. It's a prototype built with Next.js, Convex, and Liveblocks.",
 };
 
 export default function RootLayout({
@@ -20,11 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ConvexClientProvider>
-          <Toaster />
-          <ModalProvider />
-          {children}
-        </ConvexClientProvider>
+        <Suspense>
+          <ConvexClientProvider>
+            <Toaster />
+            <ModalProvider />
+            {children}
+          </ConvexClientProvider>
+        </Suspense>
       </body>
     </html>
   );
