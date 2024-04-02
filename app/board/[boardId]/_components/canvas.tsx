@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import {
   Camera,
   CanvasMode,
@@ -37,6 +37,8 @@ import { LayerPreview } from "./layer-preview";
 import { SelectionBox } from "./selection-box";
 import { SelectionTools } from "./selection-tools";
 import { Path } from "./path";
+import { useDisableScrollBounce } from "@/lib/hooks/use-disable-scroll-bounce";
+import { useDeleteLayer } from "@/lib/hooks/use-delete-layer";
 
 const MAX_LAYERS = 100;
 
@@ -53,9 +55,11 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
     b: 0,
   });
 
+  useDisableScrollBounce();
   const history = useHistory();
   const canRedo = useCanRedo();
   const canUndo = useCanUndo();
+  const deleteLayer = useDeleteLayer();
 
   const insertLayer = useMutation(
     (
@@ -383,6 +387,32 @@ export const Canvas = ({ boardId }: { boardId: string }) => {
 
     [setCanvasState, camera, history, canvasState.mode]
   );
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        // case "Backspace":
+        //   deleteLayers();
+        //   break;
+        case "z": {
+          if (e.ctrlKey || e.metaKey) {
+            if (e.shiftKey) {
+              history.redo();
+            } else {
+              history.undo();
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [deleteLayer, history]);
 
   return (
     <main className="h-full w-full relative bg-neutral-100 touch-none">
